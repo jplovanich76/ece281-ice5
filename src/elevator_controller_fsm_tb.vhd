@@ -1,52 +1,4 @@
---+----------------------------------------------------------------------------
---| 
---| COPYRIGHT 2017 United States Air Force Academy All rights reserved.
---| 
---| United States Air Force Academy     __  _______ ___    _________ 
---| Dept of Electrical &               / / / / ___//   |  / ____/   |
---| Computer Engineering              / / / /\__ \/ /| | / /_  / /| |
---| 2354 Fairchild Drive Ste 2F6     / /_/ /___/ / ___ |/ __/ / ___ |
---| USAF Academy, CO 80840           \____//____/_/  |_/_/   /_/  |_|
---| 
---| ---------------------------------------------------------------------------
---|
---| FILENAME      : MooreElevatorController_tb.vhd (TEST BENCH)
---| AUTHOR(S)     : Capt Phillip Warner, Capt Dan Johnson, **Your Name Here**
---| CREATED       : 03/2017 Last modified on 06/24/2020
---| DESCRIPTION   : This file tests the Moore elevator controller module
---|
---| DOCUMENTATION : None
---|
---+----------------------------------------------------------------------------
---|
---| REQUIRED FILES :
---|
---|    Libraries : ieee
---|    Packages  : std_logic_1164, numeric_std, unisim
---|    Files     : MooreElevatorController.vhd
---|
---+----------------------------------------------------------------------------
---|
---| NAMING CONVENSIONS :
---|
---|    xb_<port name>           = off-chip bidirectional port ( _pads file )
---|    xi_<port name>           = off-chip input port         ( _pads file )
---|    xo_<port name>           = off-chip output port        ( _pads file )
---|    b_<port name>            = on-chip bidirectional port
---|    i_<port name>            = on-chip input port
---|    o_<port name>            = on-chip output port
---|    c_<signal name>          = combinatorial signal
---|    f_<signal name>          = synchronous signal
---|    ff_<signal name>         = pipeline stage (ff_, fff_, etc.)
---|    <signal name>_n          = active low signal
---|    w_<signal name>          = top level wiring signal
---|    g_<generic name>         = generic
---|    k_<constant name>        = constant
---|    v_<variable name>        = variable
---|    sm_<state machine type>  = state machine type definition
---|    s_<signal name>          = state name
---|
---+----------------------------------------------------------------------------
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -114,15 +66,25 @@ begin
         w_stop <= '1';  wait for k_clk_period * 2;
             assert w_floor = x"3" report "bad wait on floor3" severity failure;
 		--  go up again
+		w_up_down <= '1';
+		  assert w_floor = x"4" report "bad up from floor3" severity failure;
 		
 		-- go back down one floor
+		w_up_down <= '0';
+		  assert w_floor = x"3" report "bad down from floor4" severity failure;
 		
 		-- go up the rest of the way
+		w_up_down <= '1';
+		  assert w_floor = x"4" report "bad up from floor3" severity failure;
 		
 		-- stop at top
+		w_stop <= '1'; wait for k_clk_period;
+		  assert w_floor <= x"4" report "bad wait on floor4" severity failure;
         
         -- go all the way down DOWN (how many clock cycles should that take?)
-        w_up_down <= '0'; 
+        w_up_down <= '0'; wait for 3 * k_clk_period;
+            assert w_floor <= x"1" report "bad lowering to first floor" severity failure;
+
   
 		  	
 		wait; -- wait forever
